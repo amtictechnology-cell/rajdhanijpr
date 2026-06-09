@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Ensure upload directory exists
-const uploadDir = path.join(__dirname, '../../uploads/images');
+const uploadDir = path.join(__dirname, '../../uploads/products');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -11,7 +11,7 @@ if (!fs.existsSync(uploadDir)) {
 // Storage configuration
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/images/');
+        cb(null, 'uploads/products/');
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -36,10 +36,5 @@ const upload = multer({
     }
 });
 
-module.exports = {
-    uploadImages: upload.fields([
-        { name: 'profileImage', maxCount: 1 },
-        { name: 'profileImageUrl', maxCount: 1 },
-        { name: 'IdProofImage', maxCount: 5 }
-    ])
-};
+// Export a single image upload middleware
+module.exports = upload.single('image');

@@ -3,7 +3,7 @@ const logger = require('../utils/logger');
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI, {
+        const conn = await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI, {
             dbName: process.env.DB_NAME || 'ashishpro-db',
         });
         logger.info(`MongoDB Connected: ${conn.connection.host}`);

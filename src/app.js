@@ -3,7 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const logger = require('./utils/logger');
-const Routes = require('twilio/lib/rest/Routes');
+// Twilio Routes import removed — not needed here
 const indexRoutes = require('./routes/indexRoutes');
 
 const app = express();
@@ -12,11 +12,13 @@ const app = express();
 app.use(helmet());
 const allowedOrigins = [
     "http://localhost:3000",
+    "http://localhost:4200",
     "http://127.0.0.1:3000",
     "http://localhost:4500",
     "http://localhost:4600",
     "http://127.0.0.1:4500",
     "http://127.0.0.1:4600",
+    
 ];
 
 app.use(cors({
