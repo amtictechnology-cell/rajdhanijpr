@@ -18,7 +18,7 @@ const allowedOrigins = [
     "http://localhost:4600",
     "http://127.0.0.1:4500",
     "http://127.0.0.1:4600",
-    
+    "https://rajdhaniprinters.netlify.app"
 ];
 
 app.use(cors({
@@ -28,7 +28,7 @@ app.use(cors({
 
         const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
 
-        if (allowedOrigins.includes(normalizedOrigin) || normalizedOrigin.endsWith('.vercel.app')) {
+        if (allowedOrigins.includes(normalizedOrigin) || normalizedOrigin.endsWith('.vercel.app') || normalizedOrigin.endsWith('.netlify.app')) {
             return callback(null, true);
         } else {
             console.error(`[CORS Error] Origin blocked: ${origin}`);
