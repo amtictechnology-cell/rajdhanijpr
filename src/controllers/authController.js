@@ -13,7 +13,7 @@ exports.login = async (req, res) => {
         }
 
         // Check for hardcoded credentials
-        if (email !== 'rajdhaniprinters@gmail.com' || password !== '1234') {
+        if (email !== 'rajdhaniprintersjpr@gmail.com' || password !== '1234') {
             return res.status(401).json({
                 success: false,
                 message: 'Invalid credentials'
@@ -22,7 +22,7 @@ exports.login = async (req, res) => {
 
         // Generate JWT token
         const payload = {
-            email: 'rajdhaniprinters@gmail.com',
+            email: 'rajdhaniprintersjpr@gmail.com',
             role: 'admin'
         };
         
@@ -36,7 +36,7 @@ exports.login = async (req, res) => {
             message: 'Login successful',
             token,
             user: {
-                email: 'rajdhaniprinters@gmail.com',
+                email: 'rajdhaniprintersjpr@gmail.com',
                 role: 'admin'
             }
         });

@@ -48,6 +48,11 @@ const BillSchema = new mongoose.Schema({
         trim: true,
         default: 'Cash'
     },
+    transportCharge: {
+        type: Number,
+        default: 0,
+        min: [0, 'Transport charge must be positive']
+    },
     totalAmount: {
         type: Number,
         required: true,

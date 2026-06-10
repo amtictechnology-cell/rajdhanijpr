@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 // Create a new Bill
 exports.createBill = async (req, res) => {
     try {
-        const { customerId, items, paymentMethod, billDate } = req.body;
+        const { customerId, items, paymentMethod, billDate, transportCharge } = req.body;
 
         if (!customerId) {
             return res.status(400).json({
@@ -51,16 +51,19 @@ exports.createBill = async (req, res) => {
             };
         });
 
+        const charge = Number(transportCharge) || 0;
+
         const bill = new Bill({
             customer: customerId,
             items: processedItems,
             paymentMethod: paymentMethod || 'Cash',
-            totalAmount: calculatedTotal,
+            transportCharge: charge,
+            totalAmount: calculatedTotal + charge,
             billDate: billDate || new Date()
         });
 
         await bill.save();
-        logger.info(`Bill created successfully for customer: ${customerExists.name}, Total: ${calculatedTotal}`);
+        logger.info(`Bill created successfully for customer: ${customerExists.name}, Total: ${bill.totalAmount}`);
 
         // Fetch populated bill to return
         const populatedBill = await Bill.findById(bill._id).populate('customer', 'name mobileNo email billingAddress');
@@ -139,7 +142,7 @@ exports.getBillById = async (req, res) => {
 // Update/Edit Bill
 exports.updateBill = async (req, res) => {
     try {
-        const { customerId, items, paymentMethod, billDate } = req.body;
+        const { customerId, items, paymentMethod, billDate, transportCharge } = req.body;
 
         let bill = await Bill.findById(req.params.id);
 
@@ -165,6 +168,10 @@ exports.updateBill = async (req, res) => {
         if (paymentMethod !== undefined) bill.paymentMethod = paymentMethod;
         if (billDate !== undefined) bill.billDate = billDate;
 
+        if (transportCharge !== undefined) {
+            bill.transportCharge = Number(transportCharge) || 0;
+        }
+
         // If items list is updated, recalculate amounts and total
         if (items && Array.isArray(items)) {
             let calculatedTotal = 0;
@@ -188,7 +195,11 @@ exports.updateBill = async (req, res) => {
             });
 
             bill.items = processedItems;
-            bill.totalAmount = calculatedTotal;
+            bill.totalAmount = calculatedTotal + bill.transportCharge;
+        } else if (transportCharge !== undefined) {
+            // Recalculate total if only transport charge changed
+            const itemsTotal = bill.items.reduce((sum, item) => sum + item.amount, 0);
+            bill.totalAmount = itemsTotal + bill.transportCharge;
         }
 
         await bill.save();
