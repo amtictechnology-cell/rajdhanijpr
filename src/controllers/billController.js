@@ -68,9 +68,34 @@ exports.createBill = async (req, res) => {
         // Fetch populated bill to return
         const populatedBill = await Bill.findById(bill._id).populate('customer', 'name mobileNo email billingAddress');
 
+        // Automated PDF Invoice Generation & Email Attachment delivery
+        let emailSentStatus = false;
+        let pdfPath = '';
+        try {
+            const { generateInvoicePdf } = require('../utils/pdfGenerator');
+            pdfPath = await generateInvoicePdf(populatedBill);
+
+            if (populatedBill.customer && populatedBill.customer.email && populatedBill.customer.email.trim() !== '') {
+                const { sendInvoiceEmail } = require('../utils/emailSender');
+                await sendInvoiceEmail(
+                    populatedBill.customer.email,
+                    populatedBill.customer.name,
+                    populatedBill._id,
+                    pdfPath
+                );
+                emailSentStatus = true;
+            } else {
+                logger.warn(`No valid email address found for customer ${populatedBill.customer?.name}. Skipping email.`);
+            }
+        } catch (emailError) {
+            logger.error(`Automated PDF/Email invoice failed for Bill ID ${populatedBill._id}: ${emailError.message}`);
+        }
+
         return res.status(201).json({
             success: true,
             message: 'Bill created successfully',
+            emailSent: emailSentStatus,
+            invoicePdfPath: pdfPath || null,
             bill: populatedBill
         });
     } catch (error) {
