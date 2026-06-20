@@ -66,7 +66,7 @@ exports.createBill = async (req, res) => {
         logger.info(`Bill created successfully for customer: ${customerExists.name}, Total: ${bill.totalAmount}`);
 
         // Fetch populated bill to return
-        const populatedBill = await Bill.findById(bill._id).populate('customer', 'name mobileNo email billingAddress');
+        const populatedBill = await Bill.findById(bill._id).populate('customer', 'name mobileNo email billingAddress gstNo location1 location2');
 
         // Automated PDF Invoice Generation & Email Attachment delivery
         let emailSentStatus = false;
@@ -119,7 +119,7 @@ exports.getBills = async (req, res) => {
         }
 
         const bills = await Bill.find(query)
-            .populate('customer', 'name mobileNo email billingAddress')
+            .populate('customer', 'name mobileNo email billingAddress gstNo location1 location2')
             .sort({ createdAt: -1 });
 
         return res.status(200).json({
@@ -141,7 +141,7 @@ exports.getBills = async (req, res) => {
 exports.getBillById = async (req, res) => {
     try {
         const bill = await Bill.findById(req.params.id)
-            .populate('customer', 'name mobileNo email billingAddress');
+            .populate('customer', 'name mobileNo email billingAddress gstNo location1 location2');
 
         if (!bill) {
             return res.status(404).json({
@@ -230,7 +230,7 @@ exports.updateBill = async (req, res) => {
         await bill.save();
         logger.info(`Bill updated successfully: ID ${bill._id}`);
 
-        const populatedBill = await Bill.findById(bill._id).populate('customer', 'name mobileNo email billingAddress');
+        const populatedBill = await Bill.findById(bill._id).populate('customer', 'name mobileNo email billingAddress gstNo location1 location2');
 
         return res.status(200).json({
             success: true,

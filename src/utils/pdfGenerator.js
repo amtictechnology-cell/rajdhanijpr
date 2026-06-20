@@ -13,7 +13,7 @@ if (!fs.existsSync(invoicesDir)) {
  * Generates an HTML layout for the invoice
  */
 const getInvoiceHtml = (bill) => {
-    const customer = bill.customer || { name: 'Customer', mobileNo: '', email: '', billingAddress: '' };
+    const customer = bill.customer || { name: 'Customer', mobileNo: '', email: '', billingAddress: '', gstNo: '', location1: '', location2: '' };
     const items = bill.items || [];
     const dateStr = new Date(bill.billDate).toLocaleDateString('en-IN', {
         day: '2-digit',
@@ -187,9 +187,12 @@ const getInvoiceHtml = (bill) => {
                         <div class="section-heading">Bill To</div>
                         <div class="customer-details">
                             <strong style="font-size: 16px; color: #1a202c;">${customer.name}</strong><br>
-                            ${customer.billingAddress ? customer.billingAddress + '<br>' : ''}
-                            Phone: ${customer.mobileNo}<br>
-                            Email: ${customer.email}
+                            ${customer.billingAddress ? '<strong>Address:</strong> ' + customer.billingAddress + '<br>' : ''}
+                            <strong>Phone:</strong> ${customer.mobileNo}<br>
+                            <strong>Email:</strong> ${customer.email || 'N/A'}<br>
+                            ${customer.gstNo ? '<strong>GSTIN:</strong> ' + customer.gstNo + '<br>' : ''}
+                            ${customer.location1 ? '<strong>Location 1:</strong> <a href="' + customer.location1 + '" target="_blank">Open Map Link</a><br>' : ''}
+                            ${customer.location2 ? '<strong>Location 2:</strong> <a href="' + customer.location2 + '" target="_blank">Open Location Link</a><br>' : ''}
                         </div>
                     </td>
                     <td class="meta-section">

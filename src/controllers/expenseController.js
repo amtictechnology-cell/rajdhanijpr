@@ -1,30 +1,36 @@
 const Expense = require('../models/Expense');
 const logger = require('../utils/logger');
 
-// Create a new Expense
+// Create a new Expense (POST)
 exports.createExpense = async (req, res) => {
     try {
         const { amount, date, description } = req.body;
 
-        if (amount === undefined || amount === null) {
+        // Basic validation
+        if (amount === undefined || !description) {
             return res.status(400).json({
                 success: false,
-                message: 'Amount is required'
+                message: 'Amount and description are required'
             });
         }
 
-        const expense = new Expense({
-            amount,
-            date: date || new Date(),
-            description: description || ''
-        });
+        const expenseData = {
+            amount: Number(amount),
+            description: description.trim()
+        };
 
+        if (date) {
+            expenseData.date = new Date(date);
+        }
+
+        const expense = new Expense(expenseData);
         await expense.save();
-        logger.info(`Expense created: ${expense.amount} on ${expense.date}`);
+
+        logger.info(`Expense created: ${expense.description} - Amount: ${expense.amount}`);
 
         return res.status(201).json({
             success: true,
-            message: 'Expense created successfully',
+            message: 'Expense added successfully',
             expense
         });
     } catch (error) {
@@ -37,23 +43,28 @@ exports.createExpense = async (req, res) => {
     }
 };
 
-// Get All Expenses
+// Get All Expenses (GET)
 exports.getExpenses = async (req, res) => {
     try {
         const { search, startDate, endDate } = req.query;
         let query = {};
 
+        // Search in description
         if (search) {
             query.description = { $regex: search, $options: 'i' };
         }
 
+        // Date range filtering
         if (startDate || endDate) {
             query.date = {};
             if (startDate) {
                 query.date.$gte = new Date(startDate);
             }
             if (endDate) {
-                query.date.$lte = new Date(endDate);
+                // Set end date to the end of that day (23:59:59.999) to cover the full day
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                query.date.$lte = end;
             }
         }
 
@@ -74,7 +85,7 @@ exports.getExpenses = async (req, res) => {
     }
 };
 
-// Get Single Expense by ID
+// Get Single Expense by ID (GET)
 exports.getExpenseById = async (req, res) => {
     try {
         const expense = await Expense.findById(req.params.id);
@@ -100,7 +111,7 @@ exports.getExpenseById = async (req, res) => {
     }
 };
 
-// Update/Edit Expense
+// Update/Edit Expense (PUT)
 exports.updateExpense = async (req, res) => {
     try {
         const { amount, date, description } = req.body;
@@ -114,12 +125,13 @@ exports.updateExpense = async (req, res) => {
             });
         }
 
-        if (amount !== undefined) expense.amount = amount;
-        if (date !== undefined) expense.date = date;
-        if (description !== undefined) expense.description = description;
+        // Update fields if provided
+        if (amount !== undefined) expense.amount = Number(amount);
+        if (date !== undefined) expense.date = new Date(date);
+        if (description !== undefined) expense.description = description.trim();
 
         await expense.save();
-        logger.info(`Expense updated: ID ${expense._id}`);
+        logger.info(`Expense updated: ${expense._id}`);
 
         return res.status(200).json({
             success: true,
@@ -136,10 +148,10 @@ exports.updateExpense = async (req, res) => {
     }
 };
 
-// Delete Expense
+// Delete Expense (DELETE)
 exports.deleteExpense = async (req, res) => {
     try {
-        const expense = await Expense.findById(req.params.id);
+        const expense = await Expense.findByIdAndDelete(req.params.id);
 
         if (!expense) {
             return res.status(404).json({
@@ -148,12 +160,12 @@ exports.deleteExpense = async (req, res) => {
             });
         }
 
-        await Expense.deleteOne({ _id: req.params.id });
-        logger.info(`Expense deleted: ID ${req.params.id}`);
+        logger.info(`Expense deleted: ${expense._id}`);
 
         return res.status(200).json({
             success: true,
-            message: 'Expense deleted successfully'
+            message: 'Expense deleted successfully',
+            expense
         });
     } catch (error) {
         logger.error(`Error in deleteExpense: ${error.message}`);
