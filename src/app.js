@@ -18,7 +18,7 @@ const allowedOrigins = [
     "http://localhost:4600",
     "http://127.0.0.1:4500",
     "http://127.0.0.1:4600",
-    "https://rajdhaniprinters.netlify.app"
+    "rajdhaniprintersjprbill.netlify.app"
 ];
 
 app.use(cors({
