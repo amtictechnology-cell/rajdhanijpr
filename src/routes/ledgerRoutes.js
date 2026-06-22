@@ -9,6 +9,9 @@ router.use(authMiddleware);
 // POST - Add ledger entry/transaction (gave/took)
 router.post('/', ledgerController.addTransaction);
 
+// GET - Get ledger summaries for all customers
+router.get('/all-summaries', ledgerController.getAllLedgerSummaries);
+
 // GET - Get customer ledger & summary statement
 router.get('/customer/:customerId', ledgerController.getCustomerLedger);
 

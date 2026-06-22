@@ -112,6 +112,51 @@ exports.getCustomerLedger = async (req, res) => {
     }
 };
 
+// Get ledger summaries for all customers
+exports.getAllLedgerSummaries = async (req, res) => {
+    try {
+        // Fetch all transactions
+        const transactions = await Transaction.find({});
+
+        // Group by customer ID and calculate totals
+        const summaries = {};
+        transactions.forEach(t => {
+            if (!t.customer) return;
+            const custId = t.customer.toString();
+            if (!summaries[custId]) {
+                summaries[custId] = { totalGave: 0, totalTook: 0, netBalance: 0 };
+            }
+            if (t.type === 'gave') {
+                summaries[custId].totalGave += t.amount;
+            } else if (t.type === 'took') {
+                summaries[custId].totalTook += t.amount;
+            }
+        });
+
+        // Calculate net balances
+        for (const custId in summaries) {
+            summaries[custId].netBalance = summaries[custId].totalGave - summaries[custId].totalTook;
+            summaries[custId].status = summaries[custId].netBalance > 0 
+                ? 'Customer owes us' 
+                : summaries[custId].netBalance < 0 
+                    ? 'We owe customer' 
+                    : 'Settled';
+        }
+
+        return res.status(200).json({
+            success: true,
+            summaries
+        });
+    } catch (error) {
+        logger.error(`Error in getAllLedgerSummaries: ${error.message}`);
+        return res.status(500).json({
+            success: false,
+            message: 'Server error while fetching all ledger summaries',
+            error: error.message
+        });
+    }
+};
+
 // Update/Edit Transaction
 exports.updateTransaction = async (req, res) => {
     try {
