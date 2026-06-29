@@ -8,6 +8,7 @@ const ledgerRoutes = require('./ledgerRoutes');
 const vendorRoutes = require('./vendorRoutes');
 const vendorTransactionRoutes = require('./vendorTransactionRoutes');
 const expenseRoutes = require('./expenseRoutes');
+const reportRoutes = require('./reportRoutes');
 
 router.use('/auth', authRoutes);
 router.use('/customers', customerRoutes);
@@ -17,5 +18,6 @@ router.use('/ledger', ledgerRoutes);
 router.use('/vendors', vendorRoutes);
 router.use('/vendor-transactions', vendorTransactionRoutes);
 router.use('/expenses', expenseRoutes);
+router.use('/reports', reportRoutes);
 
 module.exports = router;
